@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             GridCharacters = new DataGridView();
             buttonCargaData = new Button();
             label1 = new Label();
@@ -42,14 +43,13 @@
             buttonBuscar = new Button();
             fecha_ch = new DateTimePicker();
             label5 = new Label();
-            ImageCh = new PictureBox();
             openFileDialog1 = new OpenFileDialog();
             history = new RichTextBox();
             search_params = new TextBox();
             filter = new ComboBox();
+            DeleteB = new Button();
             ((System.ComponentModel.ISupportInitialize)GridCharacters).BeginInit();
             ((System.ComponentModel.ISupportInitialize)power_ch).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)ImageCh).BeginInit();
             SuspendLayout();
             // 
             // GridCharacters
@@ -60,6 +60,15 @@
             GridCharacters.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Sunken;
             GridCharacters.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             GridCharacters.ColumnHeadersVisible = false;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = Color.PaleTurquoise;
+            dataGridViewCellStyle1.Font = new Font("Sitka Text", 9.749999F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle1.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle1.NullValue = "vacio";
+            dataGridViewCellStyle1.SelectionBackColor = Color.MediumSeaGreen;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            GridCharacters.DefaultCellStyle = dataGridViewCellStyle1;
             GridCharacters.GridColor = SystemColors.Info;
             GridCharacters.Location = new Point(26, 290);
             GridCharacters.Name = "GridCharacters";
@@ -70,9 +79,9 @@
             // 
             // buttonCargaData
             // 
-            buttonCargaData.Location = new Point(841, 506);
+            buttonCargaData.Location = new Point(841, 519);
             buttonCargaData.Name = "buttonCargaData";
-            buttonCargaData.Size = new Size(346, 55);
+            buttonCargaData.Size = new Size(346, 42);
             buttonCargaData.TabIndex = 1;
             buttonCargaData.Text = "Cargar";
             buttonCargaData.UseVisualStyleBackColor = true;
@@ -134,7 +143,6 @@
             id_ch.ReadOnly = true;
             id_ch.Size = new Size(152, 23);
             id_ch.TabIndex = 1;
-            id_ch.Leave += TextBoxID_Leave;
             // 
             // name_ch
             // 
@@ -148,7 +156,7 @@
             // 
             power_ch.BackColor = Color.Azure;
             power_ch.Location = new Point(144, 212);
-            power_ch.Maximum = new decimal(new int[] { int.MaxValue, 0, 0, 0 });
+            power_ch.Maximum = new decimal(new int[] { 1241513983, 370409800, 542101, 0 });
             power_ch.Name = "power_ch";
             power_ch.Size = new Size(152, 23);
             power_ch.TabIndex = 5;
@@ -189,9 +197,10 @@
             fecha_ch.Format = DateTimePickerFormat.Short;
             fecha_ch.Location = new Point(144, 118);
             fecha_ch.Name = "fecha_ch";
+            fecha_ch.ShowUpDown = true;
             fecha_ch.Size = new Size(152, 23);
             fecha_ch.TabIndex = 3;
-            fecha_ch.Value = new DateTime(2024, 5, 24, 0, 0, 0, 0);
+            fecha_ch.Value = new DateTime(2024, 1, 1, 0, 0, 0, 0);
             // 
             // label5
             // 
@@ -205,17 +214,6 @@
             label5.TabIndex = 15;
             label5.Text = "fecha";
             // 
-            // ImageCh
-            // 
-            ImageCh.BackColor = Color.LightSkyBlue;
-            ImageCh.BackgroundImageLayout = ImageLayout.Stretch;
-            ImageCh.Location = new Point(302, 24);
-            ImageCh.Name = "ImageCh";
-            ImageCh.Size = new Size(175, 260);
-            ImageCh.TabIndex = 16;
-            ImageCh.TabStop = false;
-            ImageCh.Click += PictureBox1_Click;
-            // 
             // openFileDialog1
             // 
             openFileDialog1.FileName = "OpenFile";
@@ -227,9 +225,9 @@
             history.BorderStyle = BorderStyle.None;
             history.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             history.ForeColor = Color.Black;
-            history.Location = new Point(483, 22);
+            history.Location = new Point(302, 22);
             history.Name = "history";
-            history.Size = new Size(335, 262);
+            history.Size = new Size(516, 262);
             history.TabIndex = 17;
             history.Text = "";
             // 
@@ -239,7 +237,7 @@
             search_params.Name = "search_params";
             search_params.Size = new Size(277, 23);
             search_params.TabIndex = 18;
-            search_params.TextChanged += textBox1_TextChanged;
+            search_params.TextChanged += TextBox1_TextChanged;
             // 
             // filter
             // 
@@ -249,17 +247,28 @@
             filter.Size = new Size(346, 23);
             filter.TabIndex = 19;
             // 
+            // DeleteB
+            // 
+            DeleteB.Location = new Point(841, 458);
+            DeleteB.Name = "DeleteB";
+            DeleteB.Size = new Size(346, 42);
+            DeleteB.TabIndex = 20;
+            DeleteB.Text = "Borrar";
+            DeleteB.UseVisualStyleBackColor = true;
+            DeleteB.Click += DeleteB_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.HotTrack;
+            BackgroundImage = Properties.Resources._7cebf5d0f6b0fb6beb008c14b182af3b;
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(1199, 585);
+            Controls.Add(DeleteB);
             Controls.Add(filter);
             Controls.Add(search_params);
             Controls.Add(history);
-            Controls.Add(ImageCh);
             Controls.Add(label5);
             Controls.Add(fecha_ch);
             Controls.Add(buttonBuscar);
@@ -279,7 +288,6 @@
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)GridCharacters).EndInit();
             ((System.ComponentModel.ISupportInitialize)power_ch).EndInit();
-            ((System.ComponentModel.ISupportInitialize)ImageCh).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -300,11 +308,11 @@
         private System.Windows.Forms.Button buttonBuscar;
         private DateTimePicker fecha_ch;
         private Label label5;
-        private PictureBox ImageCh;
         private OpenFileDialog openFileDialog1;
         private RichTextBox history;
         private TextBox search_params;
         private ComboBox filter;
+        private Button DeleteB;
     }
 }
 

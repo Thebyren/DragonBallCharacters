@@ -1,4 +1,5 @@
 using DragonBallCharacters.Data.DataAccess;
+using MySql.Data.MySqlClient;
 using System.Data;
 using System.Security;
 
@@ -6,14 +7,15 @@ namespace DragonBallCharacters
 {
     public partial class Form1 : Form
     {
-        //filtros
-        private readonly string[] filterData = [
+        // Filtros
+        private readonly string[] filterData = {
             "id",
             "razas",
             "nombre",
-        ];
+        };
+
         // Lista de razas
-        private readonly string[] razasDragonBall = [
+        private readonly string[] razasDragonBall = {
             "Android",
             "Bio-Android",
             "Humana",
@@ -23,7 +25,8 @@ namespace DragonBallCharacters
             "Saiyajin",
             "Saiyajin/Humano",
             "Saiyajin/Saiyajin"
-        ];
+        };
+
         private readonly PersonajeDB personaje;
 
         public Form1()
@@ -32,12 +35,9 @@ namespace DragonBallCharacters
             personaje = new PersonajeDB("localhost", "root", "MEGAyol0.");
         }
 
-
-
-
-        private void ButtonCargaData_Click(object sender, EventArgs e)
+        private async void ButtonCargaData_Click(object sender, EventArgs e)
         {
-            GridCharacters.DataSource = personaje.LeerPersonajes();
+            GridCharacters.DataSource = await Task.Run(() => personaje.LeerPersonajes());
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -45,132 +45,186 @@ namespace DragonBallCharacters
             // Llenar el ComboBox con las razas
             raza_ch.Items.AddRange(razasDragonBall);
             filter.Items.AddRange(filterData);
-            
         }
 
-        private void ButtonInsertar_Click(object sender, EventArgs e)
+        private async void ButtonInsertar_Click(object sender, EventArgs e)
         {
             string nombre = name_ch.Text;
-            string raza = raza_ch.SelectedText;
-            int nivelPoder = (int)power_ch.Value;
+            string raza = raza_ch.Text;
+            Int64 nivelPoder = (Int64)power_ch.Value;
             string ch_fecha = fecha_ch.Value.ToString("yyyy-MM-dd");
             string ch_history = history.Text;
-            Image ch_image = ImageCh.Image;
-            int respuesta = personaje.CrearPersonaje(nombre, raza, nivelPoder,ch_history, ch_fecha, ch_image);
-            if (respuesta > 0)
+
+            // Buscar personaje por nombre
+            DataTable dtPersonajeExistente = await Task.Run(() => personaje.BuscarPersonajePorNombre(nombre));
+
+            if (dtPersonajeExistente.Rows.Count > 0)
             {
-                MessageBox.Show("Personaje creado correctamente");
-                GridCharacters.DataSource = personaje.LeerPersonajes();
+                // Actualizar personaje existente
+                int id = Convert.ToInt32(dtPersonajeExistente.Rows[0]["id"]);
+                await Task.Run(() => personaje.ActualizarPersonaje(id, nombre, raza, nivelPoder, ch_fecha, ch_history));
+                MessageBox.Show("Personaje actualizado correctamente");
             }
             else
             {
-                MessageBox.Show("Error al crear el personaje");
-            }
-        }
-
-
-        private void BuscarPorId()
-        {
-            int idPersonajeABuscar = int.Parse(search_params.Text);
-
-            DataTable personajeEncontrado = personaje.BuscarPersonajePorId(idPersonajeABuscar);
-
-            if (personajeEncontrado.Rows.Count > 0)
-            {
-                // El personaje fue encontrado
-
-                string? nombre = personajeEncontrado.Rows[0]["nombre"].ToString();
-                string? raza = personajeEncontrado.Rows[0]["raza"].ToString();
-                int nivelPoder = int.Parse(personajeEncontrado.Rows[0]["nivel_poder"].ToString());
-                id_ch.Text = personajeEncontrado.Rows[0]["id"].ToString();
-                name_ch.Text = nombre;
-                raza_ch.Text = raza;
-                power_ch.Value = nivelPoder;
-                if(personajeEncontrado.Rows[0]["img"] != DBNull.Value)
-   {
-                    ImageCh.Image = (Image)personajeEncontrado.Rows[0]["img"];
-                }
-    else
+                // Crear nuevo personaje
+                int respuesta = await Task.Run(() => personaje.CrearPersonaje(nombre, raza, nivelPoder, ch_history, ch_fecha));
+                if (respuesta > 0)
                 {
-                    // Si la imagen es DBNull, puedes establecer una imagen predeterminada o dejar el PictureBox vacío
-                    ImageCh.Image = null; // Dejar el PictureBox sin imagen
-                                          //ImageCh.Image = Properties.Resources.DefaultImage; // Establecer una imagen predeterminada desde tus recursos
+                    MessageBox.Show("Personaje creado correctamente");
+                }
+                else
+                {
+                    MessageBox.Show("Error al crear el personaje");
+                }
+            }
+
+            // Actualizar la cuadrícula de personajes
+            GridCharacters.DataSource = await Task.Run(() => personaje.LeerPersonajes());
+        }
+
+        private async void BuscarPorId()
+        {
+            if (int.TryParse(search_params.Text, out int idPersonajeABuscar))
+            {
+                DataTable personajeEncontrado = await Task.Run(() => personaje.BuscarPersonajePorId(idPersonajeABuscar));
+
+                if (personajeEncontrado.Rows.Count > 0)
+                {
+                    DataRow row = personajeEncontrado.Rows[0];
+
+                    id_ch.Text = row["id"].ToString();
+                    name_ch.Text = row["nombre"].ToString();
+                    raza_ch.Text = row["raza"].ToString();
+                    power_ch.Value = Convert.ToDecimal(row["nivel_poder"]);
+                    history.Text = row["historia"].ToString();
+
+
+                }
+                else
+                {
+                    MessageBox.Show("No se encontró el personaje con ID: " + idPersonajeABuscar);
                 }
             }
             else
             {
-                // El personaje no fue encontrado
-                Console.WriteLine("No se encontró el personaje con ID: " + idPersonajeABuscar);
+                MessageBox.Show("ID no válido.");
             }
         }
-
 
         private void ButtonBuscar_Click(object sender, EventArgs e)
         {
-            int? f = filter.SelectedIndex;
-            switch (f)
+            switch (filter.SelectedIndex)
             {
                 case 0:
-                    Console.WriteLine("hola");
+                    // Implementar lógica de búsqueda por ID
+                    BuscarPorId();
                     break;
                 case 1:
-                    Console.WriteLine("hola 1");
+                    // Implementar lógica de búsqueda por raza
+                    BuscarPorRaza();
                     break;
                 case 2:
-                    Console.WriteLine("hola 2");
+                    // Implementar lógica de búsqueda por nombre
+                    BuscarPorNombre();
+                    break;
+                default:
+                    MessageBox.Show("Seleccione un filtro válido.");
                     break;
             }
-            BuscarPorId();
         }
 
-        private void TextBoxID_Leave(object sender, EventArgs e)
+
+
+
+
+
+        private async void BuscarPorRaza()
         {
-            if (string.IsNullOrWhiteSpace(id_ch.Text))
+            string razaPersonajeABuscar = search_params.Text;
+
+            DataTable personajesEncontrados = await Task.Run(() => personaje.BuscarPersonajePorRaza(razaPersonajeABuscar));
+
+            if (personajesEncontrados.Rows.Count > 0)
             {
-                MessageBox.Show("Por favor, ingresa un valor en el campo de texto.");
-                id_ch.Focus(); // Devolver el foco al TextBox
+                // Mostrar todos los personajes encontrados en la cuadrícula
+                GridCharacters.DataSource = personajesEncontrados;
+
+                // O seleccionar el primer personaje encontrado para mostrar detalles individuales
+                DataRow row = personajesEncontrados.Rows[0];
+
+                id_ch.Text = row["id"].ToString();
+                name_ch.Text = row["nombre"].ToString();
+                raza_ch.Text = row["raza"].ToString();
+                power_ch.Value = Convert.ToDecimal(row["nivel_poder"]);
+                history.Text = row["historia"].ToString();
+
+
             }
             else
             {
-                BuscarPorId();
+                MessageBox.Show("No se encontró ningún personaje con la raza: " + razaPersonajeABuscar);
             }
         }
 
-        private void ButtonTestCon_Click(object sender, EventArgs e)
+        private async void BuscarPorNombre()
         {
-            if (personaje.ProbarConexion())
+            string nombrePersonajeABuscar = search_params.Text;
+
+            DataTable personajesEncontrados = await Task.Run(() => personaje.BuscarPersonajePorNombre(nombrePersonajeABuscar));
+
+            if (personajesEncontrados.Rows.Count > 0)
             {
-                MessageBox.Show("Conexión exitosa");
+                // Mostrar todos los personajes encontrados en la cuadrícula
+                GridCharacters.DataSource = personajesEncontrados;
+
+                // O seleccionar el primer personaje encontrado para mostrar detalles individuales
+                DataRow row = personajesEncontrados.Rows[0];
+
+                id_ch.Text = row["id"].ToString();
+                name_ch.Text = row["nombre"].ToString();
+                raza_ch.Text = row["raza"].ToString();
+                power_ch.Value = Convert.ToDecimal(row["nivel_poder"]);
+                history.Text = row["historia"].ToString();
+
+
             }
             else
             {
-                MessageBox.Show("Error en la conexión");
+                MessageBox.Show("No se encontró ningún personaje con el nombre: " + nombrePersonajeABuscar);
             }
         }
 
-        private void PictureBox1_Click(object sender, EventArgs e)
+        private void TextBox1_TextChanged(object sender, EventArgs e)
         {
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            // Implementar la lógica si es necesario
+        }
+        private async Task BorrarPorId()
+        {
+            if (int.TryParse(search_params.Text, out int idPersonajeAEliminar))
             {
-                try
+                var confirmResult = MessageBox.Show("¿Estás seguro de que deseas eliminar este personaje?",
+                                                     "Confirmar eliminación",
+                                                     MessageBoxButtons.YesNo);
+
+                if (confirmResult == DialogResult.Yes)
                 {
-                    var filePath = openFileDialog1.FileName;
-                    using Stream str = openFileDialog1.OpenFile();
-                    ImageCh.Image = Image.FromStream(str);
-                    ImageCh.SizeMode = PictureBoxSizeMode.StretchImage;
+                    await Task.Run(() => personaje.EliminarPersonaje(idPersonajeAEliminar));
+                    MessageBox.Show("Personaje eliminado correctamente");
+                    GridCharacters.DataSource = await Task.Run(() => personaje.LeerPersonajes());
                 }
-                catch (SecurityException ex)
-                {
-                    MessageBox.Show($"Security error.\n\nError message: {ex.Message}\n\n" +
-                    $"Details:\n\n{ex.StackTrace}");
-                }
+            }
+            else
+            {
+                MessageBox.Show("ID no válido.");
             }
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private void DeleteB_Click(object sender, EventArgs e)
         {
-
+            _ = BorrarPorId();
         }
-    }
+
+    } 
 }
 
